@@ -1,0 +1,71 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+
+
+def sierpinski_por_remocion(nivel, ax):
+    
+    def dividir(v, n):
+        if n == 0:
+            ax.fill(v[:, 0], v[:, 1], color='darkgreen')
+            return
+        # Puntos medios de los tres lados
+        m = np.array([(v[0] + v[1]) / 2, (v[1] + v[2]) / 2, (v[2] + v[0]) / 2])
+        # Los tres triángulos de las esquinas (el de en medio se descarta)
+        dividir(np.array([v[0], m[0], m[2]]), n - 1)
+        dividir(np.array([v[1], m[1], m[0]]), n - 1)
+        dividir(np.array([v[2], m[2], m[1]]), n - 1)
+
+    inicial = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
+    dividir(inicial, nivel)
+    ax.set_title(f'Nivel {nivel}')
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+#EN OTRA CELDA
+
+fig, axes = plt.subplots(1, 5, figsize=(16, 3.5))
+for ax, nivel in zip(axes, range(5)):
+    sierpinski_por_remocion(nivel, ax)
+
+plt.show()
+
+#EN OTRA CELDA
+def sierpinski_caos(n_puntos=80_000):
+    vertices = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
+    punto = np.random.rand(2)
+    puntos = np.zeros((n_puntos, 2))
+
+    for i in range(n_puntos):
+        vertice = vertices[np.random.randint(0, 3)]   # vértice al azar
+        punto = (punto + vertice) / 2                 # la mitad del camino
+        puntos[i] = punto
+
+    plt.figure(figsize=(8, 7))
+    plt.scatter(puntos[:, 0], puntos[:, 1], s=0.05, color='darkgreen')
+    
+    plt.axis('equal')
+    plt.axis('off')
+    plt.show()
+
+#EN OTRA CELDA
+sierpinski_caos()
+
+fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+vertices = np.array([[0, 0], [1, 0], [0.5, np.sqrt(3) / 2]])
+
+for ax, n in zip(axes, [500, 1_000, 10_000, 50_000]):
+    punto = np.random.rand(2)
+    pts = np.zeros((n, 2))
+    for i in range(n):
+        punto = (punto + vertices[np.random.randint(0, 3)]) / 2
+        pts[i] = punto
+    ax.scatter(pts[:, 0], pts[:, 1], s=0.3, color='darkgreen')
+    ax.set_title(f'{n:,} puntos')
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+plt.show()
+
+
