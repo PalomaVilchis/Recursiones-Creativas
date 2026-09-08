@@ -1,0 +1,100 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+
+print("Listo. Herramientas cargadas.")
+
+
+def generar_curva_dragon(iteraciones=14):
+    
+    puntos = np.array([[0.0, 0.0], [1.0, 0.0]])   # la tira sin doblar
+
+    for _ in range(iteraciones):
+        pivote = puntos[-1]                        # el extremo de la tira
+        rot = np.array([[0.0, 1.0], [-1.0, 0.0]])  # rotación de 90°
+        copia = (puntos - pivote) @ rot.T + pivote
+        puntos = np.vstack([puntos, copia[::-1][1:]])
+
+    return puntos
+
+print("Función definida.")
+
+puntos = generar_curva_dragon(iteraciones=4)
+
+plt.figure(figsize=(6, 6))
+plt.plot(puntos[:, 0], puntos[:, 1], 'o-', color='crimson', linewidth=2, markersize=4)
+plt.title('Curva del dragón — N dobleces\n(compara)')
+plt.axis('equal')
+plt.axis('off')
+plt.show()
+
+puntos = generar_curva_dragon(iteraciones=14)
+
+plt.figure(figsize=(9, 8))
+plt.plot(puntos[:, 0], puntos[:, 1], color='crimson', linewidth=0.6)
+plt.title(f'Curva del dragón — 14 dobleces ({len(puntos):,} puntos)')
+plt.axis('equal')
+plt.axis('off')
+plt.show()
+
+print(f"Con 14 dobleces la curva tiene {len(puntos):,} segmentos.")
+print("Con papel real llegaste a unos 32. La regla es la misma.")
+
+def suavizar_chaikin(puntos, pasadas=1):
+    
+    for _ in range(pasadas):
+        p = puntos
+        q = 0.75 * p[:-1] + 0.25 * p[1:]
+        r = 0.25 * p[:-1] + 0.75 * p[1:]
+        suave = np.empty((2 * len(q), 2))
+        suave[0::2] = q
+        suave[1::2] = r
+        puntos = np.vstack([p[0], suave, p[-1]])
+    return puntos
+
+
+
+def graficar_dragon(iteraciones=50, pasadas_suavizado=3, cmap='plasma'):
+    puntos = generar_curva_dragon(iteraciones)
+    puntos = suavizar_chaikin(puntos, pasadas_suavizado)
+
+    segmentos = np.stack([puntos[:-1], puntos[1:]], axis=1)
+    colores = np.linspace(0, 1, len(segmentos))
+
+    lc = LineCollection(segmentos, cmap=cmap, linewidth=0.7)
+    lc.set_array(colores)
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.add_collection(lc)
+    ax.autoscale()
+    ax.set_aspect('equal')
+    ax.axis('off')
+    ax.set_title(f'Curva del Dragón — {iteraciones} iteraciones', fontsize=13)
+    plt.show()
+
+
+graficar_dragon(iteraciones=14, pasadas_suavizado=3, cmap='plasma')
+
+def dragon_angulo(iteraciones=12, angulo_grados=90):
+    """Misma regla del dragón, pero con un ángulo de giro distinto."""
+    a = np.radians(angulo_grados)
+    rot = np.array([[np.cos(a),  np.sin(a)],
+                    [-np.sin(a), np.cos(a)]])
+
+    puntos = np.array([[0.0, 0.0], [1.0, 0.0]])
+    for _ in range(iteraciones):
+        pivote = puntos[-1]
+        copia = (puntos - pivote) @ rot.T + pivote
+        puntos = np.vstack([puntos, copia[::-1][1:]])
+    return puntos
+
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+for ax, ang in zip(axes, [60, 90, 120]):
+    p = dragon_angulo(12, ang)
+    ax.plot(p[:, 0], p[:, 1], linewidth=0.5, color='darkslateblue')
+    ax.set_title(f'Ángulo = {ang}°')
+    ax.set_aspect('equal')
+    ax.axis('off')
+plt.suptitle('La misma regla, tres ángulos distintos', fontsize=14)
+plt.show()
