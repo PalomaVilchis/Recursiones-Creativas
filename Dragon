@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 
-print("Listo. Herramientas cargadas.")
+
 
 
 def generar_curva_dragon(iteraciones=14):
@@ -17,7 +17,7 @@ def generar_curva_dragon(iteraciones=14):
 
     return puntos
 
-print("Función definida.")
+#EN OTRA CELDA
 
 puntos = generar_curva_dragon(iteraciones=4)
 
@@ -39,6 +39,8 @@ plt.show()
 
 print(f"Con 14 dobleces la curva tiene {len(puntos):,} segmentos.")
 print("Con papel real llegaste a unos 32. La regla es la misma.")
+
+#EN OTRA CELDA
 
 def suavizar_chaikin(puntos, pasadas=1):
     
@@ -75,8 +77,10 @@ def graficar_dragon(iteraciones=50, pasadas_suavizado=3, cmap='plasma'):
 
 graficar_dragon(iteraciones=14, pasadas_suavizado=3, cmap='plasma')
 
+#EN OTRA CELDA
+
 def dragon_angulo(iteraciones=12, angulo_grados=90):
-    """Misma regla del dragón, pero con un ángulo de giro distinto."""
+   
     a = np.radians(angulo_grados)
     rot = np.array([[np.cos(a),  np.sin(a)],
                     [-np.sin(a), np.cos(a)]])
