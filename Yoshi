@@ -1,0 +1,90 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D 
+
+def yoshimura_clasico(filas=6, columnas=8, ancho=1.0, alto=1.0):
+    fig, ax = plt.subplots(figsize=(10, 7))
+
+    for f in range(filas):
+        y0, y1 = f * alto, (f + 1) * alto
+        desfase = 0.5 * ancho if f % 2 else 0.0   # filas alternadas
+
+        # Pliegues valle: líneas horizontales entre filas
+        ax.plot([0, columnas * ancho], [y0, y0], 'b--', lw=1)
+
+        # Pliegues montaña: el zigzag diagonal de cada fila
+        for col in range(columnas + 1):
+            x = col * ancho + desfase
+            ax.plot([x - 0.5 * ancho, x], [y0, y1], 'r-', lw=1.4)
+            ax.plot([x, x + 0.5 * ancho], [y1, y0], 'r-', lw=1.4)
+
+    ax.plot([0, columnas * ancho], [filas * alto] * 2, 'b--', lw=1)
+    ax.set_xlim(0, columnas * ancho)
+    ax.set_ylim(0, filas * alto)
+    ax.set_aspect('equal')
+    ax.axis('off')
+    ax.set_title('Patrón Yoshimura\n(rojo continuo = montaña, azul discontinuo = valle)')
+    plt.show()
+
+yoshimura_clasico(filas=6, columnas=8)
+
+
+#------ Copia hasta aqui, ejercicio 1
+
+def _celda_yoshimura(ax, x, y, w, h, nivel):
+
+    if nivel == 0:
+        cx, cy = x + w / 2, y + h / 2
+        ax.plot([x, cx, x + w], [cy, y, cy], 'r-', lw=0.8)
+        ax.plot([x, cx, x + w], [cy, y + h, cy], 'r-', lw=0.8)
+        ax.plot([x, x + w], [cy, cy], 'b--', lw=0.5)
+    else:
+        w2, h2 = w / 2, h / 2
+        for dx in (0, w2):
+            for dy in (0, h2):
+                _celda_yoshimura(ax, x + dx, y + dy, w2, h2, nivel - 1)
+
+
+fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+for ax, nivel in zip(axes, [0, 1, 2, 3]):
+    for col in range(2):
+        for f in range(2):
+            _celda_yoshimura(ax, col * 2.0, f * 2.0, 2.0, 2.0, nivel)
+    ax.set_title(titulo)
+    ax.set_aspect('equal')
+    ax.axis('off')
+
+plt.show()
+
+#------ Copia hasta aqui, ejercicio 2
+
+def _onda_triangular(t):
+
+    return 2 * np.abs(2 * ((t / (2 * np.pi)) % 1) - 1) - 1
+
+
+def yoshimura_3d(n_diamantes=9, filas=6, radio=1.0, amplitud=0.15, altura=3.0):
+    theta = np.linspace(0, 2 * np.pi, 400)
+    z = np.linspace(0, altura, 300)
+    T, Zg = np.meshgrid(theta, z)
+
+    fase_fila = np.pi / n_diamantes
+    fila = np.floor(Zg / (altura / filas))
+    zig = _onda_triangular(n_diamantes * T + fila * n_diamantes * fase_fila)
+    zag = _onda_triangular(np.pi * filas * Zg / altura)
+
+    R = radio + amplitud * zig * zag   # modulación en rombos
+
+    X, Y = R * np.cos(T), R * np.sin(T)
+
+    fig = plt.figure(figsize=(8, 9))
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(X, Y, Zg, cmap='cividis', rstride=2, cstride=2,
+                    linewidth=0, antialiased=True)
+    ax.set_box_aspect((1, 1, 1.4))
+    ax.axis('off')
+    ax.set_title('Cilindro con pandeo tipo Yoshimura')
+    plt.show()
+
+
+yoshimura_3d(n_diamantes=8, filas=6)
